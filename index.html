@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>たんぽぽくんのprint関数講座</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+            background-color: #fcfdfa; 
+            color: #4a5568;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            border: 1px solid #f0f4f1;
+        }
+        h1 {
+            color: #2d3748;
+            font-size: 20px;
+            margin-bottom: 25px;
+            font-weight: normal;
+            letter-spacing: 1px;
+        }
+        p {
+            line-height: 1.6;
+            color: #4a5568;
+        }
+
+        /* たんぽぽの綿毛アバター */
+        .avatar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .avatar {
+            width: 90px;
+            height: 90px;
+            background-color: #ffffff;
+            border: 2px dashed #e2e8f0; 
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 15px rgba(254, 252, 191, 0.5); 
+            animation: float-avatar 2.5s ease-in-out infinite alternate;
+        }
+        .avatar-core {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 56px;
+            height: 56px;
+            background-color: #fffdf5;
+            border-radius: 50%;
+        }
+        .avatar-core::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: 14px;
+            width: 6px;
+            height: 6px;
+            background-color: #718096;
+            border-radius: 50%;
+            box-shadow: 22px 0 0 #718096;
+        }
+        .avatar-mouth {
+            position: absolute;
+            bottom: 18px;
+            left: 24px;
+            width: 8px;
+            height: 4px;
+            background-color: #718096;
+            border-radius: 0 0 4px 4px;
+            animation: talk-mouth 0.4s infinite alternate;
+        }
+        .avatar-core::after {
+            content: '';
+            position: absolute;
+            top: 28px;
+            left: 6px;
+            width: 8px;
+            height: 5px;
+            background-color: #fef08a;
+            border-radius: 50%;
+            box-shadow: 36px 0 0 #fef08a;
+        }
+
+        @keyframes float-avatar {
+            0% { transform: translateY(0) rotate(-2deg); }
+            100% { transform: translateY(-8px) rotate(2deg); }
+        }
+        @keyframes talk-mouth {
+            0% { height: 1px; }
+            100% { height: 5px; }
+        }
+        
+        /* 吹き出し */
+        .speech-bubble {
+            position: relative;
+            background: #fefcf0; 
+            border: 2px solid #fef08a;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
+            min-height: 80px;
+            margin-bottom: 25px;
+            font-size: 15px;
+        }
+        .speech-bubble:after, .speech-bubble:before {
+            bottom: 100%;
+            left: 50%;
+            border: solid transparent;
+            content: " ";
+            height: 0;
+            width: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+        .speech-bubble:after {
+            border-color: rgba(254, 252, 240, 0);
+            border-bottom-color: #fefcf0;
+            border-width: 10px;
+            margin-left: -10px;
+        }
+        .speech-bubble:before {
+            border-color: rgba(254, 240, 138, 0);
+            border-bottom-color: #fef08a;
+            border-width: 13px;
+            margin-left: -13px;
+        }
+
+        .code-span {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #edf2f7;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #2d3748;
+            display: inline-block;
+            margin: 5px 0;
+        }
+
+        /* ゲーム画面 */
+        .mission-box {
+            background-color: #f7fafc;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+        }
+        .target-output {
+            font-size: 22px;
+            color: #2d3748;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 8px;
+            background: white;
+            padding: 5px 20px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        .workspace {
+            background-color: #ffffff;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .variable-line-block {
+            background-color: #edf2f7;
+            color: #2d3748;
+            padding: 10px 24px;
+            font-size: 18px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            border: 1px solid #cbd5e0;
+        }
+
+        .print-main-block {
+            background-color: #4a5568;
+            color: white;
+            padding: 12px 24px;
+            font-size: 18px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .slot {
+            background-color: #2d3748;
+            min-width: 160px;
+            height: 40px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 10px;
+            border: 1px dashed #718096;
+        }
+        .inner-block {
+            background-color: #ffffff;
+            color: #2d3748;
+            padding: 4px 12px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+        .parts-box {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            min-height: 50px;
+        }
+        .choice-block {
+            background-color: #ffffff;
+            color: #4a5568;
+            border: 1px solid #cbd5e0;
+            padding: 8px 16px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+        .choice-block:hover {
+            border-color: #4a5568;
+            background-color: #f7fafc;
+        }
+        .choice-block.selected {
+            background-color: #edf2f7;
+            color: #a0aec0;
+            border-color: #e2e8f0;
+            cursor: default;
+        }
+
+        /* ボタン */
+        .btn {
+            border: none;
+            padding: 12px 35px;
+            font-size: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-primary { background-color: #4a5568; color: white; }
+        .btn-primary:hover { background-color: #2d3748; }
+        .btn-success { background-color: #a3e635; color: #2d3748; font-weight: bold; }
+        .btn-success:hover { background-color: #84cc16; }
+        .btn-danger { background-color: #cbd5e0; color: #4a5568; }
+        .btn-danger:hover { background-color: #a0aec0; }
+        
+        .feedback {
+            font-size: 15px;
+            min-height: 24px;
+            margin-top: 15px;
+        }
+        .success { color: #38a169; }
+        .error { color: #e53e3e; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="game-container">
+    <h1 id="main-title">たんぽぽくんのprint関数講座</h1>
+    
+    <div class="avatar-container">
+        <div class="avatar">
+            <div class="avatar-core">
+                <div class="avatar-mouth" id="mouth"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="speech-bubble" id="speech-text"></div>
+
+    <button class="btn btn-primary" id="next-btn" onclick="nextSpeech()">次へ</button>
+</div>
+
+<script>
+    // パート1：導入セリフ
+    const introSpeeches = [
+        "こんにちは！ここではPythonのprint関数について勉強していくよ！",
+        "print関数っていうのは、文字や数字などを表示するコマンドのことだよ！",
+        "ここでは、『文字・数字の表示』、『演算結果の表示』、『変数の表示』の３つに分けて勉強していくね",
+        "まずは『文字・数字の表示』について！Pythonで文字や数字を表示したいときにはprint関数を使うんだけど、表示させるのが文字なのか数字なのかによって少し書き方が変わってくるんだ",
+        "文字を表示させたい場合には、<br><span class='code-span'>print(\" 表示させたい文字 \")</span><br>と入力しよう！文字を表示させたい時は、\"（ダブルクォーテーション）で表示させたい文字を囲うのが特徴だよ",
+        "数字を表示させたい場合には、<br><span class='code-span'>print( 表示させたい数字 )</span><br>と入力しよう！数字を表示させたい時は、\"（ダブルクォーテーション）では囲まないっていう違いがあるんだ",
+        "それじゃ、実際にやってみようー！"
+    ];
+
+    // パート2：演算の解説セリフ
+    const calcSpeeches = [
+        "そうそう！そんな感じだよ！",
+        "じゃあ次は『演算結果の表示』を勉強していこう！",
+        "四則演算の記号は、コンピューターでは、<br>＋は『 ＋ 』、−は『 − 』、×は『 * 』、÷は『 / 』<br>のように表されるんだ",
+        "たとえば、３×５は <span class='code-span'>3*5</span> 、８÷２は <span class='code-span'>8/2</span> のように表記するんだ",
+        "print関数でその演算結果を表示したい時は、<br><span class='code-span'>print( 演算 )</span><br>と入力するんだ！数字を表示するときと同じく、\" （ダブルクォーテーション）はつけないって覚えておいてね",
+        "さっそく練習してみよう！"
+    ];
+
+    // パート3：変数の解説セリフ
+    const varSpeeches = [
+        "めっちゃいい感じ！じゃあ最後は、『変数の表示』を勉強していこう！",
+        "まず、変数っていうのは、文字や数字などのデータを一時的に入れておくための「名前付きの箱」のようなものんだ！",
+        "変数をprint関数で表示する流れを簡単にイメージしてみよう！",
+        "まずは変数名（箱の名前）を設定しないとだよね",
+        "Pythonにおける変数の設定の仕方は至ってシンプルで、<br><span class='code-span'>変数名 = 文字や数値</span><br>という感じで設定できる！",
+        "たとえば、<br><span class='code-span'>tenki = \"晴れ\"</span><br><span class='code-span'>age = 18</span><br>というコードは、『tenki』という箱には『晴れ』というデータを入れたことを、『age』という箱には『18』というデータを入れたことを記載してるんだ",
+        "こんな感じで変数を設定する作業は完了したよ！次は設定した変数を表示してみよう",
+        "設定した変数の内容を表示するのもすごいシンプルで、<br><span class='code-span'>print( 変数の名前 )</span><br>とコードを書くだけなんだ<br>あ、print関数に変数の名前を入力する際は、\"（ダブルクォーテーション）はつけないようにね！",
+        "変数の名前を変えれば、いくつでも変数を設定できるよ！",
+        "それじゃ、『kion』という変数に『25度』というデータを設定し、それをprint関数で表示するプログラムを作ってみよう！"
+    ];
+
+    // パート4：エンディングセリフ
+    const endingSpeeches = [
+        "おつかれさま！これでprint関数の勉強はおわりだよ！<br>引き続き情報の勉強がんばってね！"
+    ];
+
+    let speechIdx = 0;
+    let currentMode = "intro"; 
+
+    document.getElementById("speech-text").innerHTML = introSpeeches[speechIdx];
+
+    function nextSpeech() {
+        if (currentMode === "intro") {
+            speechIdx++;
+            if (speechIdx < introSpeeches.length) {
+                document.getElementById("speech-text").innerHTML = introSpeeches[speechIdx];
+                if (speechIdx === introSpeeches.length - 1) {
+                    document.getElementById("next-btn").textContent = "ゲームを始める";
+                    document.getElementById("next-btn").className = "btn btn-success";
+                }
+            } else {
+                stopMouth();
+                currentMode = "game1";
+                startGame();
+            }
+        } else if (currentMode === "midIntro") {
+            speechIdx++;
+            if (speechIdx < calcSpeeches.length) {
+                document.getElementById("speech-text").innerHTML = calcSpeeches[speechIdx];
+                if (speechIdx === calcSpeeches.length - 1) {
+                    document.getElementById("next-btn").textContent = "クイズに挑戦";
+                    document.getElementById("next-btn").className = "btn btn-success";
+                }
+            } else {
+                stopMouth();
+                currentMode = "game2";
+                startGame();
+            }
+        } else if (currentMode === "varIntro") {
+            speechIdx++;
+            if (speechIdx < varSpeeches.length) {
+                document.getElementById("speech-text").innerHTML = varSpeeches[speechIdx];
+                if (speechIdx === varSpeeches.length - 1) {
+                    document.getElementById("next-btn").textContent = "最後のパズルへ";
+                    document.getElementById("next-btn").className = "btn btn-success";
+                }
+            } else {
+                stopMouth();
+                currentMode = "game3";
+                startGame();
+            }
+        } else if (currentMode === "ending") {
+            // エンディング画面は1行のみのため、ボタンクリックで再読み込み対応
+            location.reload();
+        }
+    }
+
+    function startMouth() {
+        document.getElementById("mouth").style.animation = "talk-mouth 0.4s infinite alternate";
+    }
+    function stopMouth() {
+        document.getElementById("mouth").style.animation = "none";
+        document.getElementById("mouth").style.height = "2px";
+    }
+
+    // 問題データ（全10問）
+    const questions = [
+        // 第1章：文字・数字
+        { target: "Hello", correctText: '"Hello"', choices: ['"Hello"', "Hello", "PRINT", '"hello"'] },
+        { target: "100", correctText: "100", choices: ["100", '"100"', '"hundred"', "1000"] },
+        { target: "Python", correctText: '"Python"', choices: ['"Python"', "Python", '"python"', "パイソン"] },
+        // 第2章：演算
+        { target: "15 (3×5の結果)", correctText: "3 * 5", choices: ["3 * 5", '"3 * 5"', "3 x 5", "15"] },
+        { target: "4 (8÷2の結果)", correctText: "8 / 2", choices: ["8 / 2", '"8 / 2"', "8 ÷ 2", "4"] },
+        { target: "12 (7＋5の結果)", correctText: "7 + 5", choices: ["7 + 5", '"7 + 5"', '"12"', "7plus5"] },
+        { target: "6 (10−4の結果)", correctText: "10 - 4", choices: ["10 - 4", '"10 - 4"', "10 _ 4", "6"] },
+        // 第3章：変数
+        { target: "25度 (kionという変数の中身を表示したい)", correctText: "kion", choices: ["kion", '"kion"', '"25度"', "print_kion"], upperLine: 'kion = "25度"' },
+        { target: "晴れ (tenkiという変数の中身を表示したい)", correctText: "tenki", choices: ["tenki", '"tenki"', '"晴れ"', "tenki = 晴れ"], upperLine: 'tenki = "晴れ"' },
+        { target: "19 (ageという変数の中身を表示したい)", correctText: "age", choices: ["age", '"age"', "19", "print(age)"], upperLine: 'age = 19' }
+    ];
+
+    let currentIdx = 0;
+    let currentSelectedText = null;
+    let currentSelectedEl = null;
+
+    function startGame() {
+        const container = document.getElementById("game-container");
+        container.innerHTML = `
+            <h1 id="game-title">print関数 穴埋めパズル</h1>
+            <div class="mission-box">
+                <div>【画面に表示したい結果】</div>
+                <div id="target" class="target-output"></div>
+            </div>
+
+            <div class="workspace" id="workspace"></div>
+
+            <div class="parts-box" id="parts-box"></div>
+
+            <div style="display: flex; justify-content: center; gap: 15px;">
+                <button class="btn btn-danger" onclick="resetSlot()">外す</button>
+                <button class="btn btn-success" onclick="checkAnswer()">実行する</button>
+            </div>
+            
+            <div id="feedback" class="feedback"></div>
+        `;
+        
+        if (currentMode === "game2") {
+            document.getElementById("game-title").textContent = "print関数 演算編";
+        } else if (currentMode === "game3") {
+            document.getElementById("game-title").textContent = "print関数 変数編";
+        }
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const targetEl = document.getElementById("target");
+        const partsBoxEl = document.getElementById("parts-box");
+        const feedbackEl = document.getElementById("feedback");
+        const workspaceEl = document.getElementById("workspace");
+
+        if (currentIdx < questions.length) {
+            feedbackEl.textContent = "";
+            
+            const currentQ = questions[currentIdx];
+            targetEl.textContent = currentQ.target;
+            
+            workspaceEl.innerHTML = "";
+            if (currentQ.upperLine) {
+                const upperBlock = document.createElement("div");
+                upperBlock.className = "variable-line-block";
+                upperBlock.textContent = currentQ.upperLine;
+                workspaceEl.appendChild(upperBlock);
+            }
+            
+            const printBlock = document.createElement("div");
+            printBlock.className = "print-main-block";
+            printBlock.innerHTML = `
+                <span>print(</span>
+                <div class="slot" id="block-slot">
+                    <span style="color: #a0aec0; font-size: 13px;">ブロックを選択</span>
+                </div>
+                <span>)</span>
+            `;
+            workspaceEl.appendChild(printBlock);
+            
+            resetSlot(); 
+
+            partsBoxEl.innerHTML = "";
+            const currentChoices = [...currentQ.choices];
+            currentChoices.sort(() => Math.random() - 0.5);
+
+            currentChoices.forEach(text => {
+                const choice = document.createElement("div");
+                choice.className = "choice-block";
+                choice.textContent = text;
+                choice.onclick = () => insertBlock(choice, text);
+                partsBoxEl.appendChild(choice);
+            });
+        } else {
+            // すべてのクイズをクリアしたらエンディングへ
+            currentMode = "ending";
+            speechIdx = 0;
+            goToSpeechScreen(endingSpeeches);
+            document.getElementById("next-btn").textContent = "もう一度学ぶ";
+            document.getElementById("next-btn").className = "btn btn-primary";
+            stopMouth(); // 最後のセリフを言い終えた体で停止
+        }
+    }
+
+    function insertBlock(el, text) {
+        if (el.classList.contains("selected")) return;
+        
+        const slotEl = document.getElementById("block-slot");
+        if (currentSelectedEl) {
+            currentSelectedEl.classList.remove("selected");
+        }
+
+        currentSelectedText = text;
+        currentSelectedEl = el;
+        el.classList.add("selected");
+
+        slotEl.innerHTML = `<div class="inner-block">${text}</div>`;
+        slotEl.style.border = "none";
+    }
+
+    function resetSlot() {
+        const slotEl = document.getElementById("block-slot");
+        if (!slotEl) return;
+
+        if (currentSelectedEl) {
+            currentSelectedEl.classList.remove("selected");
+        }
+        currentSelectedText = null;
+        currentSelectedEl = null;
+        
+        slotEl.innerHTML = `<span style="color: #a0aec0; font-size: 13px;">ブロックを選択</span>`;
+        slotEl.style.border = "1px dashed #718096";
+        document.getElementById("feedback").textContent = "";
+    }
+
+    function checkAnswer() {
+        const feedbackEl = document.getElementById("feedback");
+        if (!currentSelectedText) {
+            feedbackEl.textContent = "ブロックを選択してください。";
+            feedbackEl.className = "feedback error";
+            return;
+        }
+
+        const currentQ = questions[currentIdx];
+
+        if (currentSelectedText === currentQ.correctText) {
+            feedbackEl.textContent = "正解です！よくおぼえられましたね！";
+            feedbackEl.className = "feedback success";
+            
+            setTimeout(() => {
+                currentIdx++;
+                if (currentIdx === 3 && currentMode === "game1") {
+                    currentMode = "midIntro";
+                    speechIdx = 0;
+                    goToSpeechScreen(calcSpeeches);
+                } else if (currentIdx === 7 && currentMode === "game2") {
+                    currentMode = "varIntro";
+                    speechIdx = 0;
+                    goToSpeechScreen(varSpeeches);
+                } else {
+                    loadQuestion();
+                }
+            }, 1500);
+        } else {
+            if (currentMode === "game3") {
+                if (currentSelectedText.startsWith('"') && currentSelectedText.endsWith('"')) {
+                    feedbackEl.textContent = "おっと、ダブルクォーテーションで囲むと箱の名前じゃなくて、ただの「文字」として表示されちゃうよ。";
+                } else {
+                    feedbackEl.textContent = "1行目で設定した「箱の名前」をそのまま入れてあげよう。";
+                }
+            } else {
+                if (currentSelectedText.startsWith('"') && currentSelectedText.endsWith('"')) {
+                    feedbackEl.textContent = "おっと、ダブルクォーテーションで囲むと計算されず、そのまま数式が文字として表示されちゃうよ。";
+                } else if (currentSelectedText.includes('x') || currentSelectedText.includes('÷')) {
+                    feedbackEl.textContent = "コンピューターの世界では、掛け算は「*」、割り算は「/」を使うルールだったよ。";
+                } else if (currentQ.target === "100" && currentSelectedText === '"100"') {
+                    feedbackEl.textContent = "100は数字だよね。数字の時はダブルクォーテーションで囲まないルールだよ。";
+                } else {
+                    feedbackEl.textContent = "違うブロックのようです。もう一度考えてみよう。";
+                }
+            }
+            feedbackEl.className = "feedback error";
+        }
+    }
+
+    function goToSpeechScreen(speechList) {
+        const container = document.getElementById("game-container");
+        container.innerHTML = `
+            <h1>たんぽぽくんのprint関数講座</h1>
+            <div class="avatar-container">
+                <div class="avatar">
+                    <div class="avatar-core">
+                        <div class="avatar-mouth" id="mouth"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="speech-bubble" id="speech-text"></div>
+            <button class="btn btn-primary" id="next-btn" onclick="nextSpeech()">次へ</button>
+        `;
+        startMouth();
+        document.getElementById("speech-text").innerHTML = speechList[speechIdx];
+    }
+</script>
+
+</body>
+</html>
